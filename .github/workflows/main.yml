@@ -37,9 +37,6 @@ jobs:
         with:
           ref: master
           
-      - name: Load upstream commits
-        run: git clone https://github.com/coolsnowwolf/lede.git
-
       - name: Space cleanup
         env:
           DEBIAN_FRONTEND: noninteractive
@@ -53,15 +50,20 @@ jobs:
           sudo -E apt-get clean
 
           df -h
+          
+      - name: Load upstream commits
+        run: git clone https://github.com/coolsnowwolf/lede.git
 
       - name: Update feeds
         run: |
+          cd lede
           sed -i 's/src-git helloworld/src-git helloworld/g' ./feeds.conf.default
           ./scripts/feeds update -a
           ./scripts/feeds install -a
 
       - name: Generate configuration file
         run: |
+          cd lede
           rm -f ./.config*
           touch ./.config
           #
@@ -80,11 +82,13 @@ jobs:
 
       - name: Make download
         run: |
+          cd lede
           make download -j8
           find dl -size -1024c -exec rm -f {} \;
 
       - name: Compile firmware
         run: |
+          cd lede
           make -j$(nproc) || make -j1 V=s
           echo "======================="
           echo "Space usage:"
